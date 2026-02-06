@@ -78,8 +78,21 @@ def make_dialog():
         width *= dots_per_unit
         height *= dots_per_unit
 
+        #visualization styles / coloring / aesthetics
+        #turning on cartoon side_chain helper
+        #color backbones wheat
+        #color key residues black
+        #color DNA / RNA blue
+        
+
         # render the image
         if filename:
+            #ray trace mode
+            #quality (cartoon, surface, or sticks)
+            #background quality
+            #antialias
+            #shadow (ray shadow)
+            #depth cue
             cmd.png(filename, width, height, dpi=dpi, ray=1, quiet=0)
         else:
             cmd.ray(width, height, quiet=0)

@@ -1,167 +1,548 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>Widget</class>
+ <widget class="QWidget" name="Widget">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>292</width>
-    <height>308</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string notr="true">PyMOL Demo Plugin</string>
+   <string>Sibi's Plugin</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QLabel" name="label">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>600</height>
+    </rect>
+   </property>
+   <widget class="QWidget" name="visualTab">
+    <attribute name="title">
+     <string>Visual Controls</string>
+    </attribute>
+    <widget class="QTextBrowser" name="SelectStyleButton">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>40</y>
+       <width>180</width>
+       <height>24</height>
+      </rect>
      </property>
-     <property name="minimumSize">
-      <size>
-       <width>280</width>
-       <height>60</height>
-      </size>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: #000;color:white; padding: 20px</string>
-     </property>
-     <property name="text">
-      <string notr="true">PyMOL Demo Plugin
-Based on &quot;PyMOL Rendering Plugin&quot;</string>
-     </property>
-     <property name="textFormat">
-      <enum>Qt::PlainText</enum>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+hr { height: 1px; border-width: 0; }
+li.unchecked::marker { content: &quot;\2610&quot;; }
+li.checked::marker { content: &quot;\2612&quot;; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.AppleSystemUIFont'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Select style&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
-   </item>
-   <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string notr="true">Height</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1" colspan="2">
-      <widget class="QDoubleSpinBox" name="input_height">
-       <property name="value">
-        <double>4.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string notr="true">Width</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1" colspan="2">
-      <widget class="QDoubleSpinBox" name="input_width">
-       <property name="value">
-        <double>4.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string notr="true">Units</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1" colspan="2">
-      <widget class="QComboBox" name="input_units">
-       <item>
-        <property name="text">
-         <string>inch</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>cm</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string notr="true">Filename</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="input_filename">
-       <property name="text">
-        <string notr="true"/>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="2">
-      <widget class="QPushButton" name="button_browse">
-       <property name="text">
-        <string notr="true">Browse...</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string notr="true">DPI</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1" colspan="2">
-      <widget class="QDoubleSpinBox" name="input_dpi">
-       <property name="minimum">
-        <double>1.000000000000000</double>
-       </property>
-       <property name="maximum">
-        <double>1000.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>10.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>300.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="button_ray">
-       <property name="text">
-        <string notr="true">Ray</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="button_close">
-       <property name="text">
-        <string notr="true">Close</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-  </layout>
+    <widget class="QRadioButton" name="SibiStyleSign">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>80</y>
+       <width>150</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Apply Sibi's style: magenta protein, element coloring, smooth cartoon</string>
+     </property>
+     <property name="text">
+      <string>Sibi Style</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="BrownStyleSign">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>118</y>
+       <width>150</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Apply Dr. Brown's style: firebrick protein, ambient occlusion, ray trace mode</string>
+     </property>
+     <property name="text">
+      <string>Dr. Brown Style</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="OtherButton">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>156</y>
+       <width>150</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Apply default rendering style</string>
+     </property>
+     <property name="text">
+      <string>Other</string>
+     </property>
+    </widget>
+    <widget class="QTextBrowser" name="SelProtColorSign">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>210</y>
+       <width>180</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+hr { height: 1px; border-width: 0; }
+li.unchecked::marker { content: &quot;\2610&quot;; }
+li.checked::marker { content: &quot;\2612&quot;; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.AppleSystemUIFont'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Select protein color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="ProteinColorButton">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>248</y>
+       <width>150</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Click to open the color picker and change the protein color</string>
+     </property>
+     <property name="text">
+      <string>Green</string>
+     </property>
+    </widget>
+    <widget class="QTextBrowser" name="SelProtTransparencySign">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>308</y>
+       <width>220</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+hr { height: 1px; border-width: 0; }
+li.unchecked::marker { content: &quot;\2610&quot;; }
+li.checked::marker { content: &quot;\2612&quot;; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.AppleSystemUIFont'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Adjust Transparency&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QScrollBar" name="TransparencySlider">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>346</y>
+       <width>220</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Drag to adjust transparency of all protein representations</string>
+     </property>
+     <property name="orientation">
+      <enum>Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QTextBrowser" name="IsThereLigandSign">
+     <property name="geometry">
+      <rect>
+       <x>490</x>
+       <y>40</y>
+       <width>180</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+hr { height: 1px; border-width: 0; }
+li.unchecked::marker { content: &quot;\2610&quot;; }
+li.checked::marker { content: &quot;\2612&quot;; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.AppleSystemUIFont'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Alter Selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="YesLigandButton">
+     <property name="geometry">
+      <rect>
+       <x>510</x>
+       <y>80</y>
+       <width>140</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Apply color and transparency changes to the current PyMOL selection (sele)</string>
+     </property>
+     <property name="text">
+      <string>Yes</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="NoLigandButton">
+     <property name="geometry">
+      <rect>
+       <x>510</x>
+       <y>118</y>
+       <width>140</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>No active selection — color/transparency changes apply to the whole protein</string>
+     </property>
+     <property name="text">
+      <string>No</string>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="textEdit">
+     <property name="geometry">
+      <rect>
+       <x>490</x>
+       <y>172</y>
+       <width>180</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+hr { height: 1px; border-width: 0; }
+li.unchecked::marker { content: &quot;\2610&quot;; }
+li.checked::marker { content: &quot;\2612&quot;; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.AppleSystemUIFont'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Selection color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="LigandColorButton">
+     <property name="geometry">
+      <rect>
+       <x>510</x>
+       <y>210</y>
+       <width>150</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Click to open the color picker and change the selection color</string>
+     </property>
+     <property name="text">
+      <string>Yellow</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="emptyTab">
+    <attribute name="title">
+     <string>Pocket Analysis</string>
+    </attribute>
+    <widget class="QLabel" name="fpocketObjectLabel">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>40</y>
+       <width>160</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Select PyMOL object:</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="fpocketObjectDropdown">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>72</y>
+       <width>200</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Select the loaded PyMOL object to run pocket detection on</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="fpocketRefreshButton">
+     <property name="geometry">
+      <rect>
+       <x>250</x>
+       <y>72</y>
+       <width>80</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Refresh the list of loaded PyMOL objects</string>
+     </property>
+     <property name="text">
+      <string>Refresh</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="fpocketVisibleChainsLabel">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>108</y>
+       <width>420</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="toolTip">
+      <string>Shows which chains are currently visible — fpocket will only analyze these</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="fpocketRunButton">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>132</y>
+       <width>160</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Run fpocket pocket detection on the selected object</string>
+     </property>
+     <property name="text">
+      <string>Run fpocket</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="fpocketStatusLabel">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>172</y>
+       <width>400</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string></string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="fpocketResultsLabel">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>210</y>
+       <width>160</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Detected pockets:</string>
+     </property>
+    </widget>
+    <widget class="QListWidget" name="fpocketResultsList">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>242</y>
+       <width>340</width>
+       <height>160</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Click a pocket to see its full metrics in the detail panel on the right</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="fpocketPocketColorLabel">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>414</y>
+       <width>100</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Pocket color:</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="fpocketPocketColorButton">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>410</y>
+       <width>130</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Click to choose a display color for the selected pocket</string>
+     </property>
+     <property name="text">
+      <string>TV Orange</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="fpocketShowSelectedButton">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>458</y>
+       <width>160</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Load and display the selected pocket as a surface in PyMOL</string>
+     </property>
+     <property name="text">
+      <string>Show selected pocket</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="fpocketShowAllButton">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>458</y>
+       <width>120</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Load and display all detected pockets at once, each with a different color</string>
+     </property>
+     <property name="text">
+      <string>Show all pockets</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="fpocketClearButton">
+     <property name="geometry">
+      <rect>
+       <x>340</x>
+       <y>458</y>
+       <width>120</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Remove all pocket surfaces from PyMOL</string>
+     </property>
+     <property name="text">
+      <string>Clear pockets</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="fpocketExportButton">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>510</y>
+       <width>160</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Export all detected pocket scores to a CSV file</string>
+     </property>
+     <property name="text">
+      <string>Export to CSV</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="fpocketColorByScoreButton">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>510</y>
+       <width>160</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Color the protein surface by pocket rank — blue/green = best druggability, red = worst</string>
+     </property>
+     <property name="text">
+      <string>Color by Pocket Score</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="fpocketResetSurfaceButton">
+     <property name="geometry">
+      <rect>
+       <x>380</x>
+       <y>510</y>
+       <width>120</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Hide the protein surface and restore the original protein color</string>
+     </property>
+     <property name="text">
+      <string>Reset Surface</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="fpocketDockingBoxButton">
+     <property name="geometry">
+      <rect>
+       <x>510</x>
+       <y>510</y>
+       <width>160</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Export the selected pocket's center and box dimensions for AutoDock Vina or GNINA</string>
+     </property>
+     <property name="text">
+      <string>Export Docking Box</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="fpocketDetailLabel">
+     <property name="geometry">
+      <rect>
+       <x>420</x>
+       <y>40</y>
+       <width>120</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Pocket Details</string>
+     </property>
+    </widget>
+    <widget class="QTextBrowser" name="fpocketDetailPanel">
+     <property name="geometry">
+      <rect>
+       <x>420</x>
+       <y>72</y>
+       <width>340</width>
+       <height>370</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="advancedTab">
+    <attribute name="title">
+     <string>Advanced Visual Controls</string>
+    </attribute>
+   </widget>
+  </widget>
  </widget>
  <resources/>
  <connections/>

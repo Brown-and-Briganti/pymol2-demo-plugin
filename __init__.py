@@ -407,7 +407,103 @@ def make_dialog():
             if cmd.count_atoms(f"{obj} and ({target})") == 0:
                 continue
             for prop in props:
-                cmd.set(prop, transparency, obj)
+                cmd.set(prop, transparency, f"{obj} and ({target})")
+
+    # ── Shared UI helpers (used by both Visual Controls and Advanced tabs) ────
+
+    def make_info_label(text):
+        lbl = QtWidgets.QLabel(text)
+        lbl.setWordWrap(True)
+        lbl.setStyleSheet("color: #666; font-size: 10px; font-style: italic;")
+        return lbl
+
+    def make_slider_row(minimum, maximum, value, scale=1.0, fmt="{:.2f}"):
+        """Returns (container widget, QSlider). A value label updates live."""
+        from pymol.Qt import QtCore
+        container = QtWidgets.QWidget()
+        layout = QtWidgets.QHBoxLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
+        slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        slider.setMinimum(minimum)
+        slider.setMaximum(maximum)
+        slider.setValue(value)
+        val_lbl = QtWidgets.QLabel(fmt.format(value * scale))
+        val_lbl.setFixedWidth(42)
+        slider.valueChanged.connect(lambda v, l=val_lbl, f=fmt, s=scale: l.setText(f.format(v * s)))
+        layout.addWidget(slider)
+        layout.addWidget(val_lbl)
+        return container, slider
+
+    def show_info_popup(title, info_key, info_data):
+        from pymol.Qt import QtCore, QtGui
+        data = info_data.get(info_key, {})
+        html = data.get("html", "<p>No information available.</p>")
+        image_name = data.get("image", None)
+
+        popup = QtWidgets.QDialog(dialog)
+        popup.setWindowTitle(title)
+        popup.setMinimumWidth(500)
+        layout = QtWidgets.QVBoxLayout(popup)
+
+        if image_name:
+            img_path = os.path.join(os.path.dirname(__file__), "images", image_name)
+            if os.path.exists(img_path):
+                img_lbl = QtWidgets.QLabel()
+                pixmap = QtGui.QPixmap(img_path)
+                img_lbl.setPixmap(
+                    pixmap.scaledToWidth(480, QtCore.Qt.SmoothTransformation)
+                )
+                img_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                layout.addWidget(img_lbl)
+
+        browser = QtWidgets.QTextBrowser()
+        browser.setHtml(html)
+        browser.setMinimumHeight(220)
+        browser.setOpenExternalLinks(True)
+        layout.addWidget(browser)
+
+        btn_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Close)
+        btn_box.rejected.connect(popup.reject)
+        layout.addWidget(btn_box)
+        popup.exec_()
+
+    def make_section(title, info_key, info_data):
+        """Returns (outer_frame, content_layout)."""
+        frame = QtWidgets.QFrame()
+        frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        outer = QtWidgets.QVBoxLayout(frame)
+        outer.setContentsMargins(6, 4, 6, 6)
+        outer.setSpacing(4)
+
+        header = QtWidgets.QWidget()
+        header_layout = QtWidgets.QHBoxLayout(header)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        title_lbl = QtWidgets.QLabel(f"<b>{title}</b>")
+        info_btn = QtWidgets.QPushButton("?")
+        info_btn.setFixedSize(20, 20)
+        info_btn.setToolTip(f"Learn more about {title}")
+        info_btn.setStyleSheet(
+            "QPushButton { font-weight: bold; border-radius: 10px; "
+            "background-color: #4a90d9; color: white; border: none; }"
+            "QPushButton:hover { background-color: #357abd; }"
+        )
+        info_btn.clicked.connect(lambda _, t=title, k=info_key, d=info_data: show_info_popup(t, k, d))
+        header_layout.addWidget(title_lbl)
+        header_layout.addStretch()
+        header_layout.addWidget(info_btn)
+        outer.addWidget(header)
+
+        line = QtWidgets.QFrame()
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        outer.addWidget(line)
+
+        content_widget = QtWidgets.QWidget()
+        content_layout = QtWidgets.QVBoxLayout(content_widget)
+        content_layout.setContentsMargins(2, 2, 2, 2)
+        outer.addWidget(content_widget)
+        return frame, content_layout
 
     # --- Pocket Analysis tab ---
 
@@ -771,24 +867,186 @@ def make_dialog():
     form.fpocketResetSurfaceButton.clicked.connect(reset_surface)
     form.fpocketDockingBoxButton.clicked.connect(export_docking_box)
 
-    form.YesLigandButton.toggled.connect(lambda checked: apply_ligand_color() if checked else None)
-    form.YesLigandButton.toggled.connect(lambda _: on_transparency_change(form.TransparencySlider.value()))
-    form.NoLigandButton.toggled.connect(lambda _: on_transparency_change(form.TransparencySlider.value()))
-    form.ProteinColorButton.clicked.connect(
-        lambda: open_color_picker(form.ProteinColorButton, on_color_change)
-    )
-    form.LigandColorButton.clicked.connect(
-        lambda: open_color_picker(form.LigandColorButton, on_ligand_color_change)
-    )
-    form.SibiStyleSign.toggled.connect(lambda checked: apply_sibi_style() if checked else None)
-    form.BrownStyleSign.toggled.connect(lambda checked: apply_brown_style() if checked else None)
-    form.OtherButton.toggled.connect(lambda checked: apply_sibi_style() if checked else None)
-    form.TransparencySlider.valueChanged.connect(on_transparency_change)
+    # ── Visual Controls tab ──────────────────────────────────────────────────
+    def build_styling_tab():
+        INFO_DATA = {
+            "style_presets": {
+                "html": """
+<h3>Style Presets</h3>
+<p>Apply a complete visual style to your structure in one click.
+You will be prompted to remove waters and heteroatoms before applying.</p>
+<h4>Sibi Style</h4>
+<p>Magenta protein with CPK element colors (N=blue, O=red, S=yellow).
+Smooth cartoon with ray shadows off. A clean, general-purpose publication style.</p>
+<h4>Dr. Brown Style</h4>
+<p>Firebrick protein with fancy helices, smooth loops, ambient occlusion
+(ray trace mode 1), and stronger lighting contrast.
+Best for photorealistic publication figures.</p>
+<h4>Custom</h4>
+<p>No preset applied. Use the Protein Color picker and the
+Advanced Visual Controls tab to build your own style.</p>"""
+            },
+            "protein_color": {
+                "html": """
+<h3>Protein Color</h3>
+<p>Changes the main carbon color of the entire structure.
+Element colors are always re-applied on top and cannot be overridden here:</p>
+<ul>
+<li><b>N</b> = blue</li>
+<li><b>O</b> = red</li>
+<li><b>S</b> = yellow</li>
+</ul>
+<p>The button background updates to show the currently active color.
+Changes apply immediately to all loaded atoms.</p>"""
+            },
+            "selection_coloring": {
+                "html": """
+<h3>Selection Coloring</h3>
+<p>Controls whether color and transparency changes apply to the current
+PyMOL <b>selection</b> (<code>sele</code>) or to all atoms.</p>
+<h4>Yes — apply to selection</h4>
+<p>Enables the selection color picker. Useful for coloring a ligand,
+active-site residues, or any region you have highlighted in PyMOL.
+Transparency will also exclude the selection — the protein becomes
+transparent while the selection stays opaque.</p>
+<h4>No — apply to all</h4>
+<p>All color and transparency changes apply to the whole structure.</p>
+<p><b>Tip:</b> To create a selection in PyMOL, click atoms in the viewport
+or use the command line: <code>select sele, resn LIG</code></p>"""
+            },
+            "transparency": {
+                "html": """
+<h3>Transparency</h3>
+<p>Adjusts transparency across all representations simultaneously:
+cartoon, surface, sticks, spheres, mesh, ribbon, dots, and dashes.</p>
+<ul>
+<li><b>0%</b> = fully opaque</li>
+<li><b>100%</b> = fully invisible</li>
+</ul>
+<p>A common use: set the protein to ~60% transparent while keeping a
+ligand selection fully opaque — lets you see the binding pocket in context.</p>
+<p><i>Note: surface transparency may require ray tracing to render
+correctly at high values.</i></p>"""
+            },
+        }
+
+        # ── Section 1: Style Presets ─────────────────────────────────────────
+        preset_group, preset_layout = make_section("Style Presets", "style_presets", INFO_DATA)
+        preset_layout.addWidget(make_info_label(
+            "Apply a complete visual preset. You will be prompted to remove "
+            "waters/ligands before applying."
+        ))
+        sibi_rb = QtWidgets.QRadioButton("Sibi Style")
+        sibi_rb.setToolTip("Magenta protein, CPK element colors, smooth cartoon, ray shadows off")
+        brown_rb = QtWidgets.QRadioButton("Dr. Brown Style")
+        brown_rb.setToolTip(
+            "Firebrick protein, fancy helices, ambient occlusion, ray trace mode 1"
+        )
+        other_rb = QtWidgets.QRadioButton("Custom")
+        other_rb.setToolTip(
+            "No preset — build your own style using the controls below "
+            "and the Advanced Visual Controls tab"
+        )
+        preset_layout.addWidget(sibi_rb)
+        preset_layout.addWidget(brown_rb)
+        preset_layout.addWidget(other_rb)
+
+        # ── Section 2: Protein Color ─────────────────────────────────────────
+        prot_group, prot_layout = make_section("Protein Color", "protein_color", INFO_DATA)
+        prot_layout.addWidget(make_info_label(
+            "Main carbon color for the whole structure. "
+            "N=blue, O=red, S=yellow are always preserved on top."
+        ))
+        protein_color_btn = QtWidgets.QPushButton("Magenta")
+        protein_color_btn.setToolTip("Click to open the color picker and change the protein color")
+        _, rgb = get_color("Magenta")
+        r, g, b = rgb
+        protein_color_btn.setStyleSheet(f"background-color: rgb({r},{g},{b}); color: white;")
+        prot_layout.addWidget(protein_color_btn)
+
+        # ── Section 3: Selection Coloring ────────────────────────────────────
+        sel_group, sel_layout = make_section("Selection Coloring", "selection_coloring", INFO_DATA)
+        sel_layout.addWidget(make_info_label(
+            "Apply color changes to a PyMOL selection (e.g. a ligand) "
+            "instead of the whole structure."
+        ))
+        yes_rb = QtWidgets.QRadioButton("Yes — apply to selection (sele)")
+        yes_rb.setToolTip(
+            "Apply color and transparency changes to the current PyMOL selection (sele)"
+        )
+        no_rb = QtWidgets.QRadioButton("No — apply to all")
+        no_rb.setToolTip(
+            "No active selection — color/transparency changes apply to the whole protein"
+        )
+        no_rb.setChecked(True)
+        sel_layout.addWidget(yes_rb)
+        sel_layout.addWidget(no_rb)
+        ligand_color_btn = QtWidgets.QPushButton("Yellow")
+        ligand_color_btn.setToolTip(
+            "Click to open the color picker and change the selection color"
+        )
+        _, rgb = get_color("Yellow")
+        r, g, b = rgb
+        text_color = "black" if (r * 299 + g * 587 + b * 114) / 1000 > 128 else "white"
+        ligand_color_btn.setStyleSheet(
+            f"background-color: rgb({r},{g},{b}); color: {text_color};"
+        )
+        sel_layout.addWidget(ligand_color_btn)
+
+        # ── Section 4: Transparency ──────────────────────────────────────────
+        transp_group, transp_layout = make_section("Transparency", "transparency", INFO_DATA)
+        transp_layout.addWidget(make_info_label(
+            "Sets transparency for all representations: cartoon, surface, "
+            "sticks, spheres, mesh, ribbon, and more."
+        ))
+        transp_row, transp_slider = make_slider_row(0, 99, 0, scale=1.0, fmt="{:.0f}%")
+        transp_slider.setToolTip("Drag to adjust transparency of all protein representations")
+        transp_layout.addWidget(transp_row)
+
+        # Assign to form so existing logic (update_protein_color_button, etc.) keeps working
+        form.SibiStyleSign = sibi_rb
+        form.BrownStyleSign = brown_rb
+        form.OtherButton = other_rb
+        form.ProteinColorButton = protein_color_btn
+        form.YesLigandButton = yes_rb
+        form.NoLigandButton = no_rb
+        form.LigandColorButton = ligand_color_btn
+        form.TransparencySlider = transp_slider
+
+        # Wire signals
+        sibi_rb.toggled.connect(lambda checked: apply_sibi_style() if checked else None)
+        brown_rb.toggled.connect(lambda checked: apply_brown_style() if checked else None)
+        protein_color_btn.clicked.connect(
+            lambda: open_color_picker(protein_color_btn, on_color_change)
+        )
+        yes_rb.toggled.connect(lambda checked: apply_ligand_color() if checked else None)
+        yes_rb.toggled.connect(lambda _: on_transparency_change(transp_slider.value()))
+        no_rb.toggled.connect(lambda _: on_transparency_change(transp_slider.value()))
+        ligand_color_btn.clicked.connect(
+            lambda: open_color_picker(ligand_color_btn, on_ligand_color_change)
+        )
+        transp_slider.valueChanged.connect(on_transparency_change)
+
+        # ── Assemble scrollable layout ───────────────────────────────────────
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        content = QtWidgets.QWidget()
+        vbox = QtWidgets.QVBoxLayout(content)
+        vbox.setSpacing(10)
+        vbox.setContentsMargins(10, 10, 10, 10)
+        vbox.addWidget(preset_group)
+        vbox.addWidget(prot_group)
+        vbox.addWidget(sel_group)
+        vbox.addWidget(transp_group)
+        vbox.addStretch()
+        scroll.setWidget(content)
+
+        tab_layout = QtWidgets.QVBoxLayout(form.visualTab)
+        tab_layout.setContentsMargins(0, 0, 0, 0)
+        tab_layout.addWidget(scroll)
 
     # ── Advanced Visual Controls tab ─────────────────────────────────────────
     def build_advanced_tab():
-        from pymol.Qt import QtCore, QtGui
-
         # ── Info popup content ───────────────────────────────────────────────
         INFO_DATA = {
             "representations": {
@@ -1005,101 +1263,8 @@ PowerPoint without white-box artifacts around the structure.</p>
             },
         }
 
-        def show_info_popup(title, info_key):
-            data = INFO_DATA.get(info_key, {})
-            html  = data.get("html",  "<p>No information available.</p>")
-            image_name = data.get("image", None)
-
-            popup = QtWidgets.QDialog(dialog)
-            popup.setWindowTitle(title)
-            popup.setMinimumWidth(500)
-            layout = QtWidgets.QVBoxLayout(popup)
-
-            if image_name:
-                img_path = os.path.join(os.path.dirname(__file__), "images", image_name)
-                if os.path.exists(img_path):
-                    img_lbl = QtWidgets.QLabel()
-                    pixmap = QtGui.QPixmap(img_path)
-                    img_lbl.setPixmap(
-                        pixmap.scaledToWidth(480, QtCore.Qt.SmoothTransformation)
-                    )
-                    img_lbl.setAlignment(QtCore.Qt.AlignCenter)
-                    layout.addWidget(img_lbl)
-
-            browser = QtWidgets.QTextBrowser()
-            browser.setHtml(html)
-            browser.setMinimumHeight(220)
-            browser.setOpenExternalLinks(True)
-            layout.addWidget(browser)
-
-            btn_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Close)
-            btn_box.rejected.connect(popup.reject)
-            layout.addWidget(btn_box)
-            popup.exec_()
-
-        def make_section(title, info_key):
-            """Returns (outer_frame, content_layout) — replaces QGroupBox."""
-            frame = QtWidgets.QFrame()
-            frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-            frame.setFrameShadow(QtWidgets.QFrame.Raised)
-            outer = QtWidgets.QVBoxLayout(frame)
-            outer.setContentsMargins(6, 4, 6, 6)
-            outer.setSpacing(4)
-
-            # Header row: bold title left, ? button right
-            header = QtWidgets.QWidget()
-            header_layout = QtWidgets.QHBoxLayout(header)
-            header_layout.setContentsMargins(0, 0, 0, 0)
-            title_lbl = QtWidgets.QLabel(f"<b>{title}</b>")
-            info_btn = QtWidgets.QPushButton("?")
-            info_btn.setFixedSize(20, 20)
-            info_btn.setToolTip(f"Learn more about {title}")
-            info_btn.setStyleSheet(
-                "QPushButton { font-weight: bold; border-radius: 10px; "
-                "background-color: #4a90d9; color: white; border: none; }"
-                "QPushButton:hover { background-color: #357abd; }"
-            )
-            info_btn.clicked.connect(lambda _, t=title, k=info_key: show_info_popup(t, k))
-            header_layout.addWidget(title_lbl)
-            header_layout.addStretch()
-            header_layout.addWidget(info_btn)
-            outer.addWidget(header)
-
-            line = QtWidgets.QFrame()
-            line.setFrameShape(QtWidgets.QFrame.HLine)
-            line.setFrameShadow(QtWidgets.QFrame.Sunken)
-            outer.addWidget(line)
-
-            content_widget = QtWidgets.QWidget()
-            content_layout = QtWidgets.QVBoxLayout(content_widget)
-            content_layout.setContentsMargins(2, 2, 2, 2)
-            outer.addWidget(content_widget)
-            return frame, content_layout
-
-        def make_info_label(text):
-            lbl = QtWidgets.QLabel(text)
-            lbl.setWordWrap(True)
-            lbl.setStyleSheet("color: #666; font-size: 10px; font-style: italic;")
-            return lbl
-
-        def make_slider_row(minimum, maximum, value, scale=1.0, fmt="{:.2f}"):
-            """Returns (container widget, QSlider). A value label updates live."""
-            container = QtWidgets.QWidget()
-            layout = QtWidgets.QHBoxLayout(container)
-            layout.setContentsMargins(0, 0, 0, 0)
-            slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
-            slider.setMinimum(minimum)
-            slider.setMaximum(maximum)
-            slider.setValue(value)
-            val_lbl = QtWidgets.QLabel(fmt.format(value * scale))
-            val_lbl.setFixedWidth(42)
-            slider.valueChanged.connect(lambda v, l=val_lbl, f=fmt, s=scale: l.setText(f.format(v * s)))
-            layout.addWidget(slider)
-            layout.addWidget(val_lbl)
-            return container, slider
-
         # ── 1. Representations ───────────────────────────────────────────────
-        rep_group, rep_layout = make_section("Representations", "representations")
+        rep_group, rep_layout = make_section("Representations", "representations", INFO_DATA)
         rep_layout.addWidget(make_info_label(
             "Show or hide structural representations. Use 'Apply to' to target "
             "a specific object, chain, or your current PyMOL selection."
@@ -1215,7 +1380,7 @@ PowerPoint without white-box artifacts around the structure.</p>
         rep_layout.addWidget(rep_btn_widget)
 
         # ── 2. Ray Trace Mode ────────────────────────────────────────────────
-        rt_group, rt_layout = make_section("Ray Trace Mode", "ray_trace")
+        rt_group, rt_layout = make_section("Ray Trace Mode", "ray_trace", INFO_DATA)
         rt_layout.addWidget(make_info_label(
             "Mode 1 adds ambient occlusion for depth. Mode 2 draws ink outlines — "
             "pair with the outline color button. Mode 3 gives a cel-shaded look."
@@ -1272,7 +1437,7 @@ PowerPoint without white-box artifacts around the structure.</p>
         rt_layout.addWidget(apply_rt_btn)
 
         # ── 3. Lighting ──────────────────────────────────────────────────────
-        light_group, light_layout = make_section("Lighting", "lighting")
+        light_group, light_layout = make_section("Lighting", "lighting", INFO_DATA)
         light_layout.addWidget(make_info_label(
             "Ambient = overall scene brightness. Direct = main light strength. "
             "Two-sided lighting illuminates the inside of helices and sheets."
@@ -1315,7 +1480,7 @@ PowerPoint without white-box artifacts around the structure.</p>
         light_layout.addWidget(preset_row)
 
         # ── 4. Color By Property ─────────────────────────────────────────────
-        color_group, color_layout = make_section("Color By Property", "color_by")
+        color_group, color_layout = make_section("Color By Property", "color_by", INFO_DATA)
         color_layout.addWidget(make_info_label(
             "B-factor: blue=rigid, red=flexible. Set min/max to clamp the color range. "
             "'By Element' restores standard CPK coloring."
@@ -1375,7 +1540,7 @@ PowerPoint without white-box artifacts around the structure.</p>
         color_layout.addWidget(color_btn_widget)
 
         # ── 5. Cartoon Quality ───────────────────────────────────────────────
-        cartoon_group, cartoon_layout = make_section("Cartoon Quality", "cartoon_quality")
+        cartoon_group, cartoon_layout = make_section("Cartoon Quality", "cartoon_quality", INFO_DATA)
         cartoon_layout.addWidget(make_info_label(
             "Higher smoothness = slower but publication-quality curves. "
             "Increase radii for bold, poster-style figures."
@@ -1406,7 +1571,7 @@ PowerPoint without white-box artifacts around the structure.</p>
         cartoon_layout.addWidget(cartoon_reset_btn)
 
         # ── 6. Depth & Fog ───────────────────────────────────────────────────
-        fog_group, fog_layout = make_section("Depth & Fog", "depth_fog")
+        fog_group, fog_layout = make_section("Depth & Fog", "depth_fog", INFO_DATA)
         fog_layout.addWidget(make_info_label(
             "Fog start of 0.4 = fog begins 40% into the scene. "
             "Disable depth cue for flat, journal-style figures."
@@ -1436,7 +1601,7 @@ PowerPoint without white-box artifacts around the structure.</p>
         fog_layout.addWidget(transp_bg_cb)
 
         # ── 7. H-Bond Visualization ──────────────────────────────────────────
-        hb_group, hb_layout = make_section("H-Bond Visualization", "hbonds")
+        hb_group, hb_layout = make_section("H-Bond Visualization", "hbonds", INFO_DATA)
         hb_layout.addWidget(make_info_label(
             "Draws dashed lines between H-bond donors and acceptors. "
             "If a PyMOL selection ('sele') exists, only that region is used."
@@ -1477,7 +1642,7 @@ PowerPoint without white-box artifacts around the structure.</p>
         hb_layout.addWidget(hb_btn_row)
 
         # ── 8. Export / Render ───────────────────────────────────────────────
-        export_group, export_layout = make_section("Export / Render", "export")
+        export_group, export_layout = make_section("Export / Render", "export", INFO_DATA)
         export_layout.addWidget(make_info_label(
             "Ray tracing is slow at 4x — use 2x for most publications. "
             "PNG supports transparency; JPEG does not."
@@ -1555,6 +1720,7 @@ PowerPoint without white-box artifacts around the structure.</p>
         tab_layout.setContentsMargins(0, 0, 0, 0)
         tab_layout.addWidget(scroll)
 
+    build_styling_tab()
     build_advanced_tab()
 
     return dialog
